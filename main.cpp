@@ -1,11 +1,11 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 //
-#include <windows.h>
+//#include <windows.h>
 //
 
 #include <iostream>
@@ -102,7 +102,7 @@ if (side == computer_side)
 	{	
 		printf("(no legal moves)\n");
 		computer_side = EMPTY;
-		DisplayBoard();
+		//DisplayBoard();
 		Gen();
 		continue;
 	} 
@@ -133,7 +133,7 @@ if (side == computer_side)
 	Gen();
 	PrintResult();		
     printf(" turn "); printf("%d",turn++);
-	DisplayBoard();
+	//DisplayBoard();
 	continue;
 }
 	printf("Enter move or command> ");
@@ -142,13 +142,13 @@ if (side == computer_side)
 
 	if (!strcmp(s, "d")) 
 	{
-		DisplayBoard();
+		//DisplayBoard();
 		continue;
 	}
 	if (!strcmp(s, "f")) 
 	{
 		flip = 1 - flip;
-		DisplayBoard();
+		//DisplayBoard();
 		continue;
 	}
 	if (!strcmp(s, "go"))
@@ -197,10 +197,10 @@ if (side == computer_side)
 	if (!strcmp(s, "sb")) 
 	{
 		sFen[0] = 0;
-		strcat_s(sFen,"c:\\bscp\\");//
+		//strcat(sFen,"c:\\bscp\\");
 		scanf("%s", sText);
-		strcat_s(sFen,sText);
-		strcat_s(sFen,".fen");
+		strcat(sFen,sText);
+		strcat(sFen,".fen");
 		LoadDiagram(sFen,1);
 		continue;
 	}
@@ -295,7 +295,7 @@ int ParseMove(char *s)
 /* 
 DisplayBoard() displays the board 
 The console object is only used to display in colour.
-*/
+*//*
 void DisplayBoard()
 {
 	HANDLE hConsole;
@@ -666,7 +666,7 @@ if (!diagram_file)
 	return -1;
 }
 
-strcpy_s(fen_name,file);
+strcpy(fen_name,file);
 
 for(x=0;x<num;x++)
 {
@@ -745,7 +745,7 @@ c++;
 }
 
 CloseDiagram();
-DisplayBoard();
+//DisplayBoard();
 NewPosition();
 Gen();
 printf(" diagram # %d \n",num+count);
@@ -858,7 +858,7 @@ if (promote > 0) {
 			c = 'q';
 			break;
 	}
-	sprintf_s(str, "%c%d%c%d%c",
+	sprintf(str, "%c%d%c%d%c",
 			col[start] + 'a',
 			row[start] + 1,
 			col[dest] + 'a',
@@ -866,7 +866,7 @@ if (promote > 0) {
 			c);
 }
 else
-	sprintf_s(str, "%c%d%c%d",
+	sprintf(str, "%c%d%c%d",
 			col[start] + 'a',
 			row[start] + 1,
 			col[dest] + 'a',
