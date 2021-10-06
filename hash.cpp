@@ -37,6 +37,7 @@ void RandomizeHash()
 {
 int p,x;
 for(p=0;p<6;p++)
+{
 	for(x=0;x<64;x++)
 	{
 		hash[0][p][x] = Random(HASHSIZE);
@@ -45,6 +46,7 @@ for(p=0;p<6;p++)
 		lock[1][p][x]= Random(HASHSIZE);
 	}
 	hashpos[0] = new hashp[MAXHASH];
+}
 hashpos[1] = new hashp[MAXHASH];
 }
 /*
@@ -147,13 +149,13 @@ If so, it fetches the move stored there.
 */
 bool LookUp(const int s)
 {
-if(hashpos[s][currentkey].hashlock != currentlock)
-{
-  return false;
-}
+	if(hashpos[s][currentkey].hashlock != currentlock)
+	{
+		return false;
+	}
 
-hash_start = hashpos[s][currentkey].start;
-hash_dest = hashpos[s][currentkey].dest;
-return true;
+	hash_start = hashpos[s][currentkey].start;
+	hash_dest = hashpos[s][currentkey].dest;
+	return true;
 }
 

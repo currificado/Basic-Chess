@@ -72,7 +72,7 @@ char sText[256];
 int m;
 int turns=0;
 int t;
-int lookup;
+//int lookup;
 
 double nps;
 
@@ -90,7 +90,7 @@ if (side == computer_side)
 	
 	currentkey = GetKey();
 	currentlock = GetLock();
-	lookup = LookUp(side);
+	//lookup = LookUp(side);
 	
 	if(move_start != 0 || move_dest != 0)
 	{
@@ -109,7 +109,7 @@ if (side == computer_side)
 
 	printf("\n hash %d ",hashpositions[0]);
 	printf(" hash %d ",hashpositions[1]);
-	printf(" collisions %d ",collisions);
+	printf(" collisions %ld ",collisions);
 	printf("\n");
 	collisions = 0;
 	
@@ -164,10 +164,10 @@ if (side == computer_side)
 	if (!strcmp(s, "moves")) 
 	{     
 		printf("Moves \n");
-		move *g;
+		//move *g;
 		for (int i = 0; i < first_move[1]; ++i)
 		{
-			g = &move_list[i];
+			//g = &move_list[i];
 			printf("%s",MoveString(move_list[i].start,move_list[i].dest,move_list[i].promote));
 			printf("\n");
 		}
@@ -390,7 +390,6 @@ int text = 15;
     }
 }
 
-/* 
 xboard() is a substitute for main() that is XBoard
 and WinBoard compatible. 
 */
@@ -400,9 +399,8 @@ void xboard()
 	int computer_side;
 	char line[256], command[256];
 	int m;
-	int post = 0;
-	int analyze = 0;
-	int lookup;
+	//int post = 0;
+	//int lookup;
 
 	signal(SIGINT, SIG_IGN);
 	printf("\n");
@@ -420,7 +418,7 @@ void xboard()
 			Gen();
 			currentkey = GetKey();
 			currentlock = GetLock();
-			lookup = LookUp(side);
+			//lookup = LookUp(side);
 
 			if(move_start != 0 || move_dest != 0)
 			{
@@ -525,7 +523,7 @@ void xboard()
 			think();
 			currentkey = GetKey();
 			currentlock = GetLock();
-			lookup = LookUp(side);
+			//lookup = LookUp(side);
 			if(hash_start==0 && hash_dest==0)
 				continue;
 			printf("Hint: %s\n", MoveString(hash_start,hash_dest,0));
@@ -552,12 +550,12 @@ void xboard()
 		}
 		if (!strcmp(command, "post")) 
 		{
-			post = 2;
+			//post = 2;
 			continue;
 		}
 		if (!strcmp(command, "nopost")) 
 		{
-			post = 0;
+			//post = 0;
 			continue;
 		}
 
@@ -655,7 +653,7 @@ return r;
 
 int LoadDiagram(char* file,int num)
 {
-int x,n=0;
+int x;
 static int count=1;
 char ts[200];
 
