@@ -58,41 +58,39 @@ for (int i = 1; i <= max_depth; ++i)
 {
 	currentmax = i;
 	if(fixed_depth==0 && max_depth>1)
+	if(fixed_time==1)
 	{
-		if(fixed_time==1)
-		{
-			if(GetTime() >= start_time + max_time)
-			{
-				stop_search = true;
-				return;
-			}
-		}
-		else if(GetTime() >= start_time + max_time/4)
+		if(GetTime() >= start_time + max_time)
 		{
 			stop_search = true;
 			return;
 		}
+	}
+	else if(GetTime() >= start_time + max_time/4)
+	{
+		stop_search = true;
+		return;
+	}
 
-		x = Search(-10000, 10000, i);
+	x = Search(-10000, 10000, i);
 
-		printf("%d %d %d %d ", i, x, (GetTime() - start_time) / 10, nodes);
+	printf("%d %d %d %d ", i, x, (GetTime() - start_time) / 10, nodes);
 
-		if(LookUp(side))
-		{
-			DisplayPV(i);
-		}
-		else
-		{
-			move_start = 0;
-			move_dest = 0;
-		}
-		printf("\n");
-		fflush(stdout);
+	if(LookUp(side))
+	{
+		DisplayPV(i);
+	}
+	else
+	{
+		move_start = 0;
+		move_dest = 0;
+	}
+	printf("\n");
+	fflush(stdout);
 
-		if (x > 9000 || x < -9000)
-		{
-			break;
-		}
+	if (x > 9000 || x < -9000)
+	{
+		break;
 	}
 }
 }
