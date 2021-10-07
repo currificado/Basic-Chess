@@ -85,7 +85,7 @@ Adds an entry into the HashTable.
 If that index is already being used, it simply overwrites it.
 
 */
-void AddHash(const int s, const move m)
+void AddHash(const int s, const move2 m)
 {
 hashp* ptr = &hashpos[s][currentkey];
 ptr->hashlock = currentlock;

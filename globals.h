@@ -115,7 +115,7 @@ typedef struct {
 	int dest;
 	int promote;//
 	int score;
-  } move;
+  } move2;
 
 /* an element of the history stack, with the information
    necessary to take a move back. */
@@ -148,7 +148,7 @@ extern int nodes;
 
 extern int board[64];
 extern int color[64];
-extern int init_color[64];
+extern int init_color2[64];
 extern int init_board[64];
 extern int kingloc[2];
 
@@ -161,7 +161,7 @@ extern const int row[64];
 extern const int col[64];
 
 extern int first_move[MAX_PLY];
-extern move move_list[MOVE_STACK];
+extern move2 move_list[MOVE_STACK];
 extern game game_list[GAME_STACK];
 
 extern int hash_start,hash_dest;
@@ -257,7 +257,7 @@ U64 GetKey();
 U64 GetLock();
 void Free();
 void FreeAllHash();
-void AddHash(const int s, const move m);
+void AddHash(const int s, const move2 m);
 bool LookUp(const int s);
 int GetHashPercent();
 

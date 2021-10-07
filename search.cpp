@@ -137,7 +137,7 @@ int Search(int alpha, int beta, int depth)
 	if (ply > MAX_PLY-2)
 		return Eval();
 
-move bestmove;
+move2 bestmove;
 
 int bestscore = -10001;
 
@@ -383,7 +383,7 @@ It is moved to the top of the list so that it will be played next.
 */
 void Sort(const int from)
 {
-	move g;
+	move2 g;
 
 	int bs = move_list[from].score;
 	int bi = from;
