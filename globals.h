@@ -111,6 +111,13 @@ void ShowAll(int ply);//
 #define HASH_SCORE    100000000
 #define CAPTURE_SCORE 10000000
 
+#define MTY_WHI_SQR 1
+#define MTY_BLK_SQR 2
+#define WHI_SQR_W 3
+#define WHI_SQR_B 4
+#define BLK_SQR_W 5
+#define BLK_SQR_B 6
+
 typedef struct {
 	int start;
 	int dest;

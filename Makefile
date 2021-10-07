@@ -9,7 +9,7 @@ OBJS := $(patsubst %.cpp,%.o,$(SRCS))
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^
+	$(CC) -lcurses -o $@ $^
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 clean:
