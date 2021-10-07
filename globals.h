@@ -1,4 +1,5 @@
 #include <memory.h>
+#include <curses.h>
 //#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
