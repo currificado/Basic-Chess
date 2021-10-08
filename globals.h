@@ -10,7 +10,7 @@
 
 void ShowAll(int ply);//
 
-#define U64 int64_t 
+#define U64 uint64_t
 
 #define A1	0
 #define B1	1

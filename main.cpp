@@ -8,6 +8,8 @@
 //#include <windows.h>
 //
 
+#include <inttypes.h>
+
 #include <iostream>
 
 #include <sys/timeb.h>
@@ -109,7 +111,7 @@ if (side == computer_side)
 
 	printf("\n hash %d ",hashpositions[0]);
 	printf(" hash %d ",hashpositions[1]);
-	printf(" collisions %ld ",collisions);
+	printf(" collisions %" PRIu64 " " ,collisions);
 	printf("\n");
 	collisions = 0;
 	

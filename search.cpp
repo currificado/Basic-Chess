@@ -57,7 +57,7 @@ printf("ply      nodes  score  pv\n");
 for (int i = 1; i <= max_depth; ++i) 
 {
 	currentmax = i;
-	if(fixed_depth==0 && max_depth>1)
+	//if(fixed_depth==0 && max_depth>1)
 	if(fixed_time==1)
 	{
 		if(GetTime() >= start_time + max_time)
