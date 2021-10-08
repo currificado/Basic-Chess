@@ -367,7 +367,7 @@ void DisplayBoard()
 	refresh();
 	noecho();
 	while (getch() !='q');
-	//erase();
+	erase();
 	endwin();
 }
 /*
