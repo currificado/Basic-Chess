@@ -104,7 +104,7 @@ if (side == computer_side)
 	{	
 		printf("(no legal moves)\n");
 		computer_side = EMPTY;
-		//DisplayBoard();
+		DisplayBoard();
 		Gen();
 		continue;
 	} 
@@ -135,7 +135,7 @@ if (side == computer_side)
 	Gen();
 	PrintResult();		
     printf(" turn "); printf("%d\n",turn++);
-	//DisplayBoard();
+	DisplayBoard();
 	continue;
 }
 	printf("Enter move or command> ");
@@ -726,7 +726,7 @@ c++;
 }
 
 CloseDiagram();
-//DisplayBoard();
+DisplayBoard();
 NewPosition();
 Gen();
 printf(" diagram # %d \n",num+count);
