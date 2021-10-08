@@ -362,9 +362,12 @@ void DisplayBoard()
 	else if(flip==1)
 		printw("\n\n   h g f e d c b a\n\n");
 
+	printw("Press 'q' to return to menu.\n");
+
 	refresh();
-	getch();
-	erase();
+	noecho();
+	while (getch() !='q');
+	//erase();
 	endwin();
 }
 /*
