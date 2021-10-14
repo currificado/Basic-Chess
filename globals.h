@@ -17,7 +17,7 @@ void ShowAll(int ply);//
 #define C1	2
 #define D1	3
 #define E1	4
-#define F1  5
+#define F1	5
 #define G1	6
 #define H1	7
 
@@ -123,7 +123,7 @@ typedef struct {
 	int dest;
 	int promote;//
 	int score;
-  } move_;
+} move_;
 
 /* an element of the history stack, with the information
    necessary to take a move back. */

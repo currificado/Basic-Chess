@@ -1,30 +1,33 @@
 #include "globals.h"
 
-int side,xside;
-int fifty;
-int ply,hply;
+int side,xside; // side es quien juega (0=Blancas, 1=Negras); xside es el jugador opuesto
+int fifty; // contador de jugadas desde que hubo captura o movimiento de peón 
+int ply,hply; // ply es el contador de jugadas para la variante actual, hply es el contador global
 
-int nodes;
+int nodes; // cantidad de nodos analizados en una variante
 
-int board[64];
-int color[64];
-int kingloc[2];
+int board[64]; // array con la disposición de las piezas en el tablero
+int color[64]; // colores de los escaques (0=Blanco, 1=Negro)
+int kingloc[2]; // kingloc[0] posición del rey blanco, kingloc[1] es posición del rey negro
 
 int history[64][64];
 
-int table_score[2] ;
-int square_score[2][6][64];
-int king_endgame[2][64];
-int pawn_mat[2];
-int piece_mat[2];
-int passed[2][64];
+int table_score[2] ; //
+int square_score[2][6][64]; /* puntaje de la posición de las piezas: 
+el primer índice es Blancas/Negras, el segundo la pieza y el tercero el valor/puntaje */
+int king_endgame[2][64]; // valor de la posición del rey (en finales)
+int pawn_mat[2]; // material de peones
+int piece_mat[2]; // material de piezas
+int passed[2][64]; // puntaje de los peones pasados
 
-int qrb_moves[64][9];
-int knight_moves[64][9];
-int king_moves[64][9];
+int qrb_moves[64][9]; /* dada una casilla 0<=x<=63, qrb_moves[x] es un array de 9 elementos
+con las casillas adyacentes alcanzables por la dama (-1 marca el fin de la lista) */
+int knight_moves[64][9]; // casillas alcanzables por el caballo (-1 marca el fin de la lista)
+int king_moves[64][9]; // casillas alcanzables por el rey (-1 marca el fin de la lista)
 
-move_ move_list[MOVE_STACK];
-int first_move[MAX_PLY];
+move_ move_list[MOVE_STACK]; /* array con todas las moves de una variante */
+int first_move[MAX_PLY]; /* first_move[j] da el índice de move_list donde arrancan las 
+jugadas de la ply n° j */
 
 game game_list[GAME_STACK];
 
@@ -33,6 +36,7 @@ char piece_char[6] =
 	'P', 'N', 'B', 'R', 'Q', 'K'
 };
 
+/* array con el valor de las piezas en centipeones */
 int piece_value[6] = 
 {
 	100, 300, 300, 500, 900, 10000
@@ -62,6 +66,7 @@ int init_board[64] =
 	3, 1, 2, 4, 5, 2, 1, 3
 };
 
+/* Dada una casilla 0<=x<=63, col[x] da el número de columna de x */
 const int col[64]=
 {
 	0, 1, 2, 3, 4, 5, 6, 7,
@@ -74,6 +79,7 @@ const int col[64]=
 	0, 1, 2, 3, 4, 5, 6, 7
 };
 
+/* Dada una casilla 0<=x<=63, row[x] da el número de fila de x */
 const int row[64]=
 {
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -101,24 +107,24 @@ int Flip[64] =
 int pawn_score[64] = 
 {
 	  0,   0,   0,   0,   0,   0,   0,   0,
-      0,   2,   4, -12, -12,   4,   2,   0,
-      0,   2,   4,   4,   4,   4,   2,   0,
-      0,   2,   4,   8,   8,   4,   2,   0,
-      0,   2,   4,   8,   8,   4,   2,   0,
-      4,   8,  10,  16,  16,  10,   8,   4,
-    100, 100, 100, 100, 100, 100, 100, 100,
+	  0,   2,   4, -12, -12,   4,   2,   0,
+	  0,   2,   4,   4,   4,   4,   2,   0,
+	  0,   2,   4,   8,   8,   4,   2,   0,
+	  0,   2,   4,   8,   8,   4,   2,   0,
+	  4,   8,  10,  16,  16,  10,   8,   4,
+	100, 100, 100, 100, 100, 100, 100, 100,
 	  0,   0,   0,   0,   0,   0,   0,   0
 };
 
 int knight_score[64] = 
 {
-	-30, -20, -10,  -8,  -8, -10, -20, -30,
-	-16, -6,   -2,   0,   0,   -2, -6, -16,
-	-8,   -2,   4,   6,   6,   4,   -2, -8,
-	-5,   0,   6,   8,   8,   6,   0, -5,
-	-5,   0,   6,   8,   8,   6,   0, -5,
-	-10,   -2,   4,   6,   6,   4,   -2, -10,
-	-20, -10,   -2,   0,   0,   -2, -10, -20,
+	 -30, -20, -10, -8, -8, -10, -20,  -30,
+	 -16,  -6,  -2,  0,  0,  -2,  -6,  -16,
+	  -8,  -2,   4,  6,  6,   4,  -2,   -8,
+	  -5,   0,   6,  8,  8,   6,   0,   -5,
+	  -5,   0,   6,  8,  8,   6,   0,   -5,
+	 -10,  -2,   4,  6,  6,   4,  -2,  -10,
+	 -20, -10,  -2,  0,  0,  -2, -10,  -20,
 	-150, -20, -10, -5, -5, -10, -20, -150
 };
 
@@ -136,12 +142,12 @@ int bishop_score[64] =
 
 int rook_score[64] = 
 {
-	4, 4,  4,  6, 6,  4, 4, 4,
-	0, 0,  0,  0, 0,  0, 0, 0,
-	0, 0,  0,  0, 0,  0, 0, 0,
-	0, 0,  0,  0, 0,  0, 0, 0,
-	0, 0,  0,  0, 0,  0, 0, 0,
-	0, 0,  0,  0, 0,  0, 0, 0,
+	 4,  4,  4,  6,  6,  4,  4,  4,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	 0,  0,  0,  0,  0,  0,  0,  0,
 	20, 20, 20, 20, 20, 20, 20, 20,
 	10, 10, 10, 10, 10, 10, 10, 10
 };
@@ -158,43 +164,44 @@ int queen_score[64] =
 	-10, -10,   2,   2,   2,   2, -10, -10
 };
 
-int king_score[64] = 
+int king_score[64] = /* puntajes para la posición del rey en apertura y medio juego */
 {
      20,  20,  20, -40,  10, -60,  20,  20,     
 	 15,  20, -25, -30, -30, -45,  20,  15,   
 	-48, -48, -48, -48, -48, -48, -48, -48,
-    -48, -48, -48, -48, -48, -48, -48, -48,
-    -48, -48, -48, -48, -48, -48, -48, -48,
-    -48, -48, -48, -48, -48, -48, -48, -48,
-    -48, -48, -48, -48, -48, -48, -48, -48,
-    -48, -48, -48, -48, -48, -48, -48, -48
+	-48, -48, -48, -48, -48, -48, -48, -48,
+	-48, -48, -48, -48, -48, -48, -48, -48,
+	-48, -48, -48, -48, -48, -48, -48, -48,
+	-48, -48, -48, -48, -48, -48, -48, -48,
+	-48, -48, -48, -48, -48, -48, -48, -48
 };
 
-int king_endgame_score[64] = 
+int king_endgame_score[64] = /* puntajes para la posición del rey en finales */
 {
-	  0,   8,  16,  18,  18,  16,  8,   0,
-	  8,  16,  24,  32,  32,  24,  16,  8,
-	 16,  24,  32,  40,  40,  32,  24,  16,
-	 25,  32,  40,  48,  48,  40,  32,  25,
-	 25,  32,  40,  48,  48,  40,  32,  25,
-	 16,  24,  32,  40,  40,  32,  24,  16,
-	 8,  16,  24,  32,  32,  24,  16,  8,
-	  0,  8,  16,  18,  18,  16,  8,   0
+	  0,   8,  16,  18,  18,  16,  8,  0,
+	  8,  16,  24,  32,  32,  24, 16,  8,
+	 16,  24,  32,  40,  40,  32, 24, 16,
+	 25,  32,  40,  48,  48,  40, 32, 25,
+	 25,  32,  40,  48,  48,  40, 32, 25,
+	 16,  24,  32,  40,  40,  32, 24, 16,
+	  8,  16,  24,  32,  32,  24, 16,  8,
+	  0,   8,  16,  18,  18,  16,  8,  0
 };
 
 int passed_score[64] = 
 {
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	60,  60,  60,  60  ,60, 60, 60, 60,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	 0,  0,  0,  0,  0,  0,  0,  0,
+	60, 60, 60, 60, 60, 60, 60, 60,
 	30, 30, 30, 30, 30, 30, 30, 30,
-	15, 15, 15, 15,15, 15, 15, 15, 
-	8, 8, 8, 8, 8, 8, 8, 8,
-	8, 8, 8, 8, 8, 8, 8, 8,
-	0, 0, 0, 0, 0, 0, 0, 0
+	15, 15, 15, 15, 15, 15, 15, 15, 
+	 8,  8,  8,  8,  8,  8,  8,  8,
+	 8,  8,  8,  8,  8,  8,  8,  8,
+	 0,  0,  0,  0,  0,  0,  0,  0
 };
 
-int rank[2][64];
+int rank[2][64]; /* da el número de fila para cada casilla 
+(dependiendo si es desde la perspectiva de las blancas o de las negras, que es el primer índice) */
 /*
 
 SetTables fills the square_score tables, king_endgame tables and passed tables with the individual piece tables.
@@ -202,7 +209,7 @@ The value of each piece is added to the score for each square.
 The board is flipped for the Black scores.
 
 */
-void SetTables()
+void SetTables() /* Carga las tablas con los puntajes de las piezas */
 {
 
 for(int x=0;x<64;x++)
@@ -233,31 +240,29 @@ for(int x=0;x<64;x++)
 Sets up variables for a new game.
 
 */
-void InitBoard()
+void InitBoard() /* inicialización del tablero */
 {
-int x;
+	for (int x = 0; x < 64; ++x) 
+	{
+		color[x] = init_color_[x];
+		board[x] = init_board[x];
+		rank[0][x] = row[x];
+		rank[1][x] = 7 - row[x];
+	}
 
-for (x = 0; x < 64; ++x) 
-{
-	color[x] = init_color_[x];
-	board[x] = init_board[x];
-	rank[0][x] = row[x];
-	rank[1][x] = 7 - row[x];
-}
+	side = 0; // inician las Blancas
+	xside = 1; // esperan las Negras
+	fifty = 0; // contador de las 50 jugadas en 0
+	ply = 0; // contador de ply en la variante actual en 0
+	hply = 0; // contador de ply global en 0
+	first_move[0] = 0;
+	kingloc[0] = E1; /* posición del rey de las blancas en e1 */
+	kingloc[1] = E8; /* posición del rey de las negras en e8 */
 
-side = 0;
-xside = 1;
-fifty = 0;
-ply = 0;
-hply = 0;
-first_move[0] = 0;
-kingloc[0] = E1;
-kingloc[1] = E8;
-	
-game_list[hply].castle_q[0] = 1;
-game_list[hply].castle_q[1] = 1;
-game_list[hply].castle_k[0] = 1;
-game_list[hply].castle_k[1] = 1;
+	game_list[hply].castle_q[0] = 1;
+	game_list[hply].castle_q[1] = 1;
+	game_list[hply].castle_k[0] = 1;
+	game_list[hply].castle_k[1] = 1;
 }
 /*
 
@@ -268,7 +273,7 @@ void NewPosition()
 {
 	piece_mat[0] = pawn_mat[0] = table_score[0] = 0;
 	piece_mat[1] = pawn_mat[1] = table_score[1] = 0;
-
+	
 	for(int i=0;i<64;i++)
 	{
 		if(board[i] < 6)
@@ -277,7 +282,7 @@ void NewPosition()
 		}
 	}
 	currentkey = GetKey();
-    currentlock = GetLock();
+	currentlock = GetLock();
 }
 /*
 
@@ -286,8 +291,8 @@ Alg displays a move.
 */
 void Alg(int a,int b)
 {
-Algebraic(a);
-Algebraic(b);
+	Algebraic(a);
+	Algebraic(b);
 }
 /*
 
@@ -314,131 +319,129 @@ void SetMoves()
 	int k=0;
 	int y;
 	nodes = 1;
-
-for(int x=0;x<64;x++)
-{
-	k = 0;
-	if(row[x]<6 && col[x]<7) 
-		knight_moves[x][k++] =  x+17;
-	if(row[x]<7 && col[x]<6) 
-		knight_moves[x][k++] =  x+10;
-	if(row[x]<6 && col[x]>0) 
-		knight_moves[x][k++] =  x+15;
-	if(row[x]<7 && col[x]>1) 
-		knight_moves[x][k++] =  x+6;
-	if(row[x]>1 && col[x]<7) 
-		knight_moves[x][k++] =  x-15;
-	if(row[x]>0 && col[x]<6) 
-		knight_moves[x][k++] =  x-6;
-	if(row[x]>1 && col[x]>0) 
-		knight_moves[x][k++] =  x-17;
-	if(row[x]>0 && col[x]>1) 
-		knight_moves[x][k++] =  x-10;
-	knight_moves[x][k] = -1;
-}
-
-for(int x=0;x<64;x++)
-{
-	k = 0;
-
-	for(int z=0;z<8;z++)
+	
+	for(int x=0;x<64;x++)
 	{
-		qrb_moves[x][z] = -1;
+		k = 0;
+		if(row[x]<6 && col[x]<7) 
+			knight_moves[x][k++] =  x+17;
+		if(row[x]<7 && col[x]<6) 
+			knight_moves[x][k++] =  x+10;
+		if(row[x]<6 && col[x]>0) 
+			knight_moves[x][k++] =  x+15;
+		if(row[x]<7 && col[x]>1) 
+			knight_moves[x][k++] =  x+6;
+		if(row[x]>1 && col[x]<7) 
+			knight_moves[x][k++] =  x-15;
+		if(row[x]>0 && col[x]<6) 
+			knight_moves[x][k++] =  x-6;
+		if(row[x]>1 && col[x]>0) 
+			knight_moves[x][k++] =  x-17;
+		if(row[x]>0 && col[x]>1) 
+			knight_moves[x][k++] =  x-10;
+		knight_moves[x][k] = -1;
 	}
+	
+	for(int x=0;x<64;x++)
+	{
+		k = 0;
 		
-	if(col[x]>0) qrb_moves[x][WEST]=x-1;
-	if(col[x]<7) qrb_moves[x][EAST]=x+1;
-	if(row[x]>0) qrb_moves[x][SOUTH]=x-8;
-	if(row[x]<7) qrb_moves[x][NORTH]=x+8;
-	if(col[x]<7 && row[x]<7) qrb_moves[x][NE]=x+9;
-	if(col[x]>0 && row[x]<7) qrb_moves[x][NW]=x+7;
-	if(col[x]>0 && row[x]>0) qrb_moves[x][SW]=x-9;
-	if(col[x]<7 && row[x]>0) qrb_moves[x][SE]=x-7;
-
-    y=0;
-	if(col[x]>0) 
-		king_moves[x][y++]=x-1;
-	if(col[x]<7) 
-		king_moves[x][y++]=x+1;
-	if(row[x]>0) 
-		king_moves[x][y++]=x-8;
-	if(row[x]<7) 
-		king_moves[x][y++]=x+8;
-	if(col[x]<7 && row[x]<7) 
-		king_moves[x][y++]=x+9;
-	if(col[x]>0 && row[x]<7) 
-		king_moves[x][y++]=x+7;
-	if(col[x]>0 && row[x]>0) 
-		king_moves[x][y++]=x-9;
-	if(col[x]<7 && row[x]>0) 
-		king_moves[x][y++]=x-7;
-	king_moves[x][y] = -1;
-}
-nodes = 0;
+		for(int z=0;z<8;z++)
+		{
+			qrb_moves[x][z] = -1;
+		}
+		
+		if(col[x]>0) qrb_moves[x][WEST]=x-1;
+		if(col[x]<7) qrb_moves[x][EAST]=x+1;
+		if(row[x]>0) qrb_moves[x][SOUTH]=x-8;
+		if(row[x]<7) qrb_moves[x][NORTH]=x+8;
+		if(col[x]<7 && row[x]<7) qrb_moves[x][NE]=x+9;
+		if(col[x]>0 && row[x]<7) qrb_moves[x][NW]=x+7;
+		if(col[x]>0 && row[x]>0) qrb_moves[x][SW]=x-9;
+		if(col[x]<7 && row[x]>0) qrb_moves[x][SE]=x-7;
+		
+		y=0;
+		if(col[x]>0) 
+			king_moves[x][y++]=x-1;
+		if(col[x]<7) 
+			king_moves[x][y++]=x+1;
+		if(row[x]>0) 
+			king_moves[x][y++]=x-8;
+		if(row[x]<7) 
+			king_moves[x][y++]=x+8;
+		if(col[x]<7 && row[x]<7) 
+			king_moves[x][y++]=x+9;
+		if(col[x]>0 && row[x]<7) 
+			king_moves[x][y++]=x+7;
+		if(col[x]>0 && row[x]>0) 
+			king_moves[x][y++]=x-9;
+		if(col[x]<7 && row[x]>0) 
+			king_moves[x][y++]=x-7;
+		king_moves[x][y] = -1;
+	}
+	nodes = 0;
 }
 /*dont need below here*/
 int done[100];
 int GetBest(int ply);//
+
 void ShowAll(int ply)
 {
-
-move_ *g;
-//DisplayBoard();
-memset(done, 0, sizeof(done));
-
-          printf(" ply ");
-        printf("%d",ply);
-        printf(" nodes ");
-        printf("%d",nodes);
-        printf(" side ");
-        printf("%d",side);
-        printf(" xside ");
-        printf("%d",xside);
-        printf("\n");
-  
-	 printf(" one %d ",first_move[ply]);
-	  printf(" two %d ",first_move[ply+1]);
-	  Alg(move_list[first_move[0]].start,move_list[first_move[0]].dest);
-			
-        printf("\n");
- 
-     int j;
-  for(int i=first_move[ply];i<first_move[ply+1];i++)
-  //     for(int i=first_move[ply+1];i<first_move[ply + 2];i++)
-    {
-        j = GetBest(ply);
-        {
-        //how dest display current line?
-        g = &move_list[j];
-        printf("%s",MoveString(move_list[j].start,move_list[j].dest,move_list[j].promote));
-        printf(" ");
-        printf(" score ");
-        printf("%d",g->score);
-        printf("\n");
-        }
-    }
- printf("\n");
- 
- getchar();
+	move_ *g;
+	//DisplayBoard();
+	memset(done, 0, sizeof(done));
+	
+	printf(" ply ");
+	printf("%d",ply);
+	printf(" nodes ");
+	printf("%d",nodes);
+	printf(" side ");
+	printf("%d",side);
+	printf(" xside ");
+	printf("%d",xside);
+	printf("\n");
+	
+	printf(" one %d ",first_move[ply]);
+	printf(" two %d ",first_move[ply+1]);
+	Alg(move_list[first_move[0]].start,move_list[first_move[0]].dest);
+	
+	printf("\n");
+	int j;
+	for(int i=first_move[ply];i<first_move[ply+1];i++)
+	{
+		j = GetBest(ply);
+		{
+		//how dest display current line?
+		g = &move_list[j];
+		printf("%s",MoveString(move_list[j].start,move_list[j].dest,move_list[j].promote));
+		printf(" ");
+		printf(" score ");
+		printf("%d",g->score);
+		printf("\n");
+		}
+	}
+	printf("\n");
+	
+	getchar();
 }
 
 int GetBest(int ply)
 {
-move_ *g;
-int bestscore = -100000000;
-int best = 0;
-  for(int i=0;i<first_move[ply+1]-first_move[ply];i++)
-  {
-    if(done[i] == 1) continue;
-    g = &move_list[first_move[ply] + i];
-    if(g->start == 0 && g->dest == 0)
-      continue;//
-    if(g->score > bestscore)
-    {
-        bestscore= g->score;
-        best = i;
-    }
-  }
-  if(best<1000) done[best]=1;//1000?
-  return first_move[ply]+best;
+	move_ *g;
+	int bestscore = -100000000;
+	int best = 0;
+	for(int i=0;i<first_move[ply+1]-first_move[ply];i++)
+	{
+		if(done[i] == 1) continue;
+		g = &move_list[first_move[ply] + i];
+		if(g->start == 0 && g->dest == 0)
+		continue;//
+		if(g->score > bestscore)
+		{
+			bestscore= g->score;
+			best = i;
+		}
+	}
+	if(best<1000) done[best]=1;//1000?
+	return first_move[ply]+best;
 }
