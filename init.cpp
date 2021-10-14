@@ -23,7 +23,7 @@ int qrb_moves[64][9];
 int knight_moves[64][9];
 int king_moves[64][9];
 
-move2 move_list[MOVE_STACK];
+move_ move_list[MOVE_STACK];
 int first_move[MAX_PLY];
 
 game game_list[GAME_STACK];
@@ -38,7 +38,7 @@ int piece_value[6] =
 	100, 300, 300, 500, 900, 10000
 };
 
-int init_color2[64] = 
+int init_color_[64] = 
 {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -239,7 +239,7 @@ int x;
 
 for (x = 0; x < 64; ++x) 
 {
-	color[x] = init_color2[x];
+	color[x] = init_color_[x];
 	board[x] = init_board[x];
 	rank[0][x] = row[x];
 	rank[1][x] = 7 - row[x];
@@ -382,7 +382,7 @@ int GetBest(int ply);//
 void ShowAll(int ply)
 {
 
-move2 *g;
+move_ *g;
 //DisplayBoard();
 memset(done, 0, sizeof(done));
 
@@ -424,7 +424,7 @@ memset(done, 0, sizeof(done));
 
 int GetBest(int ply)
 {
-move2 *g;
+move_ *g;
 int bestscore = -100000000;
 int best = 0;
   for(int i=0;i<first_move[ply+1]-first_move[ply];i++)
