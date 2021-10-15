@@ -7,7 +7,7 @@ int ply,hply; // ply es el contador de jugadas para la variante actual, hply es 
 int nodes; // cantidad de nodos analizados en una variante
 
 int board[64]; // array con la disposición de las piezas en el tablero
-int color[64]; // colores de los escaques (0=Blanco, 1=Negro)
+int color[64]; // color de la pieza que ocupa ese escaque (0=Blanco, 1=Negro, 6=vacío)
 int kingloc[2]; // kingloc[0] posición del rey blanco, kingloc[1] es posición del rey negro
 
 int history[64][64];
@@ -154,7 +154,7 @@ int rook_score[64] =
 
 int queen_score[64] = 
 {
-    -10, -10,  -6,  -4,  -4,  -6, -10, -10,
+	-10, -10,  -6,  -4,  -4,  -6, -10, -10,
 	-10,   2,   2,   2,   2,   2,   2, -10,
 	  2,   2,   2,   3,   3,   2,   2,   2,
 	  2,   2,   3,   4,   4,   3,   2,   2,
@@ -166,8 +166,8 @@ int queen_score[64] =
 
 int king_score[64] = /* puntajes para la posición del rey en apertura y medio juego */
 {
-     20,  20,  20, -40,  10, -60,  20,  20,     
-	 15,  20, -25, -30, -30, -45,  20,  15,   
+	 20,  20,  20, -40,  10, -60,  20,  20,
+	 15,  20, -25, -30, -30, -45,  20,  15,
 	-48, -48, -48, -48, -48, -48, -48, -48,
 	-48, -48, -48, -48, -48, -48, -48, -48,
 	-48, -48, -48, -48, -48, -48, -48, -48,
@@ -211,29 +211,27 @@ The board is flipped for the Black scores.
 */
 void SetTables() /* Carga las tablas con los puntajes de las piezas */
 {
+	for(int x=0;x<64;x++)
+	{
+		square_score[0][0][x] = pawn_score[x] + 100;
+		square_score[0][1][x] = knight_score[x] + 300;
+		square_score[0][2][x] = bishop_score[x] + 300;
+		square_score[0][3][x] = rook_score[x] + 500;
+		square_score[0][4][x] = queen_score[x] + 900;
+		square_score[0][5][x] = king_score[x];
 
-for(int x=0;x<64;x++)
-{
-    square_score[0][0][x] = pawn_score[x] + 100;
-    square_score[0][1][x] = knight_score[x] + 300;
-    square_score[0][2][x] = bishop_score[x] + 300;
-	square_score[0][3][x] = rook_score[x] + 500;
-    square_score[0][4][x] = queen_score[x] + 900;
-    square_score[0][5][x] = king_score[x];
+		square_score[1][0][x] = pawn_score[Flip[x]] + 100;
+		square_score[1][1][x] = knight_score[Flip[x]] + 300;
+		square_score[1][2][x] = bishop_score[Flip[x]] + 300;
+		square_score[1][3][x] = rook_score[Flip[x]] + 500;
+		square_score[1][4][x] = queen_score[Flip[x]] + 900;
+		square_score[1][5][x] = king_score[Flip[x]];
 
-    square_score[1][0][x] = pawn_score[Flip[x]] + 100;
-    square_score[1][1][x] = knight_score[Flip[x]] + 300;
-    square_score[1][2][x] = bishop_score[Flip[x]] + 300;
-	square_score[1][3][x] = rook_score[Flip[x]] + 500;
-    square_score[1][4][x] = queen_score[Flip[x]] + 900;
-	square_score[1][5][x] = king_score[Flip[x]];
-
-	king_endgame[0][x] = king_endgame_score[x] - square_score[0][5][x];
-	king_endgame[1][x] = king_endgame_score[x] - square_score[1][5][x];
-	passed[0][x] = passed_score[Flip[x]];
-	passed[1][x] = passed_score[x];
-}
-
+		king_endgame[0][x] = king_endgame_score[x] - square_score[0][5][x];
+		king_endgame[1][x] = king_endgame_score[x] - square_score[1][5][x];
+		passed[0][x] = passed_score[Flip[x]];
+		passed[1][x] = passed_score[x];
+	}
 }
 /*
 
@@ -273,11 +271,11 @@ void NewPosition()
 {
 	piece_mat[0] = pawn_mat[0] = table_score[0] = 0;
 	piece_mat[1] = pawn_mat[1] = table_score[1] = 0;
-	
+
 	for(int i=0;i<64;i++)
 	{
 		if(board[i] < 6)
-		{     
+		{
 			AddPiece(color[i],board[i],i);
 		}
 	}
@@ -319,7 +317,7 @@ void SetMoves()
 	int k=0;
 	int y;
 	nodes = 1;
-	
+
 	for(int x=0;x<64;x++)
 	{
 		k = 0;
@@ -341,7 +339,7 @@ void SetMoves()
 			knight_moves[x][k++] =  x-10;
 		knight_moves[x][k] = -1;
 	}
-	
+
 	for(int x=0;x<64;x++)
 	{
 		k = 0;
@@ -390,7 +388,7 @@ void ShowAll(int ply)
 	move_ *g;
 	//DisplayBoard();
 	memset(done, 0, sizeof(done));
-	
+
 	printf(" ply ");
 	printf("%d",ply);
 	printf(" nodes ");
@@ -400,11 +398,11 @@ void ShowAll(int ply)
 	printf(" xside ");
 	printf("%d",xside);
 	printf("\n");
-	
+
 	printf(" one %d ",first_move[ply]);
 	printf(" two %d ",first_move[ply+1]);
 	Alg(move_list[first_move[0]].start,move_list[first_move[0]].dest);
-	
+
 	printf("\n");
 	int j;
 	for(int i=first_move[ply];i<first_move[ply+1];i++)
@@ -421,7 +419,7 @@ void ShowAll(int ply)
 		}
 	}
 	printf("\n");
-	
+
 	getchar();
 }
 
