@@ -10,7 +10,7 @@ int board[64]; // array con la disposición de las piezas en el tablero
 int color[64]; // color de la pieza que ocupa ese escaque (0=Blanco, 1=Negro, 6=vacío)
 int kingloc[2]; // kingloc[0] posición del rey blanco, kingloc[1] es posición del rey negro
 
-int history[64][64];
+int history[64][64]; // historial de puntajes: history[x][y] es el puntaje del movimiento de x a y
 
 int table_score[2] ; //
 int square_score[2][6][64]; /* puntaje de la posición de las piezas: 
