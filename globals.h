@@ -118,23 +118,24 @@ void ShowAll(int ply);//
 #define BLK_SQR_W 5
 #define BLK_SQR_B 6
 
+/* Esta estructura corresponde al tipo de cada nodo en el análisis de una variante */
 typedef struct {
-	int start;
-	int dest;
-	int promote;//
-	int score;
+	int start; // casilla origen
+	int dest; // casilla destino
+	int promote; // pieza a la que se promocionó, si la jugada fuera una promoción (0 en caso contrario)
+	int score; // puntaje de la jugada
 } move_;
 
 /* an element of the history stack, with the information
    necessary to take a move back. */
 typedef struct {
-	int start;
-	int dest;
-	int promote;
-	int capture;
-	int fifty;
-	int castle_q[2];
-	int castle_k[2];
+	int start;// casilla origen
+	int dest;// casilla destino
+	int promote;// pieza a la que se promocionó, si la jugada fue una promoción (0 en caso contrario)
+	int capture;// pieza capturada, si la jugada fue una captura (EMPTY en caso contrario)
+	int fifty;// contador de jugadas desde que hubo movimiento de peón o captura
+	int castle_q[2];// permiso de enrocar largo (para Blancas[0]/Negras[1])
+	int castle_k[2];// permiso de enrocar corto (para Blancas[0]/Negras[1])
 	U64 hash;
 	U64 lock;
 } game;
