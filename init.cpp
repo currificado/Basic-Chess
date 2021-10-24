@@ -13,7 +13,7 @@ int kingloc[2]; // kingloc[0] posición del rey blanco, kingloc[1] es posición 
 int history[64][64]; // historial de puntajes: history[x][y] es el puntaje del movimiento de x a y
 
 int table_score[2] ; //
-int square_score[2][6][64]; /* puntaje de la posición de las piezas: 
+int square_score[2][6][64]; /* valor de las piezas (esto es el valor material + puntaje dependiendo de la posición): 
 el primer índice es Blancas/Negras, el segundo la pieza y el tercero el valor/puntaje */
 int king_endgame[2][64]; // valor de la posición del rey (en finales)
 int pawn_mat[2]; // material de peones
