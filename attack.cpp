@@ -39,7 +39,7 @@ bool Attack(const int s,const int x) // s es Blancas (=0) o Negras (=1); x es la
 	int k = 0;
 	int sq = knight_moves[x][k]; // knight_moves[x] tiene la lista de casillas desde donde un caballo podría saltar a x
 	
-	while(sq > -1) // recorro la lista anterior
+	while(sq > -1) // recorre la lista anterior
 	{
 		if(color[sq] == s && board[sq]==N) // si esa casilla está ocupada por una pieza de color s y además es un caballo
 			return true;
@@ -149,7 +149,7 @@ It returns -1 if there are none.
 // s es side, sq es la casilla origen, d es la dirección, p es la pieza (B=alfil, R=torre o Q=dama)
 int LineCheck(const int s, int sq, const int d, const int p)
 {
-	sq = qrb_moves[sq][d]; // hago que sq sea la casilla adyacente a la pasada como parámetro en la dirección d
+	sq = qrb_moves[sq][d]; // hace que sq sea la casilla adyacente a la pasada como parámetro en la dirección d
 	while(sq > -1)
 	{
 		if(color[sq] != EMPTY)

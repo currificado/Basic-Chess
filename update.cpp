@@ -12,14 +12,14 @@ evaluation) whenever a piece moves.
 void UpdatePiece(const int s, const int p, const int start, const int dest)
 // s es side, p es la pieza, start es la casilla origen y dest la casilla destino
 {
-	AddKey(s,p,start);
-	AddKey(s,p,dest);
+	AddKey(s,p,start); // "deshace" el último movimiento (o sea, vuelve las claves al valor que tenían antes de que la pieza p estuviera en start)
+	AddKey(s,p,dest); // "hace" que el último movimiento se refleje en las claves
 	board[dest]=p; // en la casilla destino ahora está la pieza p
 	color[dest]=s; // la pieza p es de color s
 	board[start]=EMPTY; // la casilla origen se fija vacía
 	color[start]=EMPTY; // la casilla de origen no está ocupada por ningún bando
 	if(p==K) // si la pieza que se movió es el rey
-		kingloc[s] = dest; // actualizo posición del rey de s
+		kingloc[s] = dest; // actualiza la posición del rey de s
 }
 /*
 
@@ -29,9 +29,9 @@ evaluation) whenever a piece is removed.
 */
 void RemovePiece(const int s, const int p, const int sq)
 {
-	AddKey(s,p,sq); // actualizo hash y lock
-	board[sq]=EMPTY; // borro la pieza en la casilla pasada como parámetro
-	color[sq]=EMPTY; // dicha casilla no está ocupada por ningún bando
+	AddKey(s,p,sq); // actualiza currenthash y currentlock
+	board[sq]=EMPTY; // borra la pieza en la casilla pasada como parámetro
+	color[sq]=EMPTY; // dicha casilla ahora no está ocupada por ningún bando
 }
 /*
 
@@ -41,9 +41,9 @@ evaluation) whenever a piece is added.
 */
 void AddPiece(const int s, const int p, const int sq)
 {
-	AddKey(s,p,sq); // actualiza hash y lock
+	AddKey(s,p,sq); // actualiza currenthash y currentlock
 	board[sq]=p; // pone una pieza p en el escaque sq
-	color[sq]=s; // el escaque sq está ahora ocupado por una pieza del color s
+	color[sq]=s; // el escaque sq ahora está ocupado por una pieza de bando s
 }
 /*
 
@@ -73,20 +73,20 @@ int MakeMove(const int start, const int dest)
 		else if(dest==C1) // si la CASILLA DESTINO es C1, o sea, si ENROQUE LARGO 0-0-0 DE LAS BLANCAS
 		{
 			if (Attack(xside,D1)) // si la casilla intermedia d1 está siendo atacada por el bando contrario
-				return false; // retorno falso
+				return false; // retorna falso
 			UpdatePiece(side,R,A1,D1); // si no, actualizo la posición de la torre de a1 a d1
 		}
 		else if(dest==G8) // si la CASILLA DESTINO es G8, o sea, si ENROQUE CORTO 0-0 DE LAS NEGRAS
 		{
 			if (Attack(xside,F8)) // si la casilla intermedia f8 está siendo atacada por el bando contrario
-				return false; // retorno falso
+				return false; // retorna falso
 			UpdatePiece(side,R,H8,F8); // si no, actualizo la posición de la torre de h8 a f8
 		}
 		else if(dest==C8) // si la CASILLA DESTINO es C8, o sea, si ENROQUE LARGO 0-0-0 DE LAS NEGRAS
 		{	
 			if (Attack(xside,D8)) // si la casilla intermedia d8 está siendo atacada por el bando contrario
-				return false; // retorno falso
-			UpdatePiece(side,R,A8,D8); // si no, actualizo la posición de la torre de a8 a d8
+				return false; // retorna falso
+			UpdatePiece(side,R,A8,D8); // si no, actualiza la posición de la torre de a8 a d8
 		}
 	}/*
 	    No se chequea que la casilla destino NO esté amenazada ya que en ese caso, 
