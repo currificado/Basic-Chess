@@ -63,8 +63,8 @@ void RandomizeHash()
 			lock[0][p][x] = Random(HASHSIZE);
 			lock[1][p][x] = Random(HASHSIZE);
 		}
+		hashpos[0] = new hashp[MAXHASH]; // pide memoria para la tabla de hash de blancas
 	}
-	hashpos[0] = new hashp[MAXHASH]; // pide memoria para la tabla de hash de blancas
 	hashpos[1] = new hashp[MAXHASH]; // pide memoria para la tabla de hash de negras
 }
 /*
