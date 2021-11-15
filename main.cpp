@@ -70,6 +70,7 @@ int main()
 
 	int m; // m=1 indicará éxito en el parsing de una jugada (texto no reconocido como ningún comando)
 	int t; // tiempo de procesamiento de cada jugada
+	// int lookup;
 
 	double nps; // nodos por segundo
 
@@ -85,6 +86,8 @@ int main()
 
 			currentkey = GetKey(); // actualiza la clave de la posición actual
 			currentlock = GetLock(); // actualiza el cerrojo de la posición actual
+			//lookup = LookUp(side);
+			LookUp(side);
 
 			if(move_start != 0 || move_dest != 0)
 			{
@@ -395,6 +398,7 @@ void xboard()
 			currentkey = GetKey();
 			currentlock = GetLock();
 			//lookup = LookUp(side);
+			LookUp(side);
 
 			if(move_start != 0 || move_dest != 0)
 			{
@@ -500,6 +504,7 @@ void xboard()
 			currentkey = GetKey();
 			currentlock = GetLock();
 			//lookup = LookUp(side);
+			LookUp(side);
 			if(hash_start==0 && hash_dest==0)
 				continue;
 			printf("Hint: %s\n", MoveString(hash_start,hash_dest,0));
