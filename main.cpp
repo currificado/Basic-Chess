@@ -111,27 +111,27 @@ int main()
 			collisions = 0;
 
 			printf("Computer's move: %s\n", MoveString(hash_start,hash_dest,0));printf("\n");
-			MakeMove(hash_start,hash_dest);
+			MakeMove(hash_start,hash_dest); // realiza la jugada del módulo
 
-			SetMaterial();
+			SetMaterial(); // actualiza el material
 
-			t = GetTime() - start_time;
-			printf("\nTime: %d ms\n", t);
+			t = GetTime() - start_time; // obtiene el tiempo que transcurrió desde empezó a "pensar" hasta el instante actual
+			printf("\nTime: %d ms\n", t); // imprime este tiempo (en milisegundos)
 			if(t>0)
-				nps = (double)nodes / (double)t;
+				nps = (double)nodes / (double)t; // nps en este momento es nodos por milisegundo
 			else
 				nps=0;
-			nps *= 1000.0;
+			nps *= 1000.0; // hace que sea nodos por segundo (multiplicando por 1000)
 
-			printf("\nNodes per second: %d\n", (int)nps);
-			ply = 0;
-
-			first_move[0] = 0;
-			Gen();
-			PrintResult();
-			printf(" turn "); printf("%d\n",turn++);
-			DisplayBoard();
-			continue;
+			printf("\nNodes per second: %d\n", (int)nps); // imprime los nodos por segundo
+			
+			ply = 0; // pone el contador de ply en 0 (el de la variante en curso, no el global)
+			first_move[0] = 0; // indica que las jugadas de la ply 0 empiezan en índice 0 de move_list
+			Gen(); // genera todos los movimientos posibles
+			PrintResult(); // procedimiento que chequea si es el fin del juego y muestra el resultado en caso de haber terminado
+			printf(" turn "); printf("%d\n",turn++); // muestra el turno
+			DisplayBoard(); // muestra el tablero
+			continue; // continúa a la siguiente iteración
 		}
 
 		printf("Enter move or command> "); // despliega el prompt y pasa a leer el comando de STDIN
@@ -194,11 +194,10 @@ int main()
 		if (!strcmp(s, "sb")) // si es `sb` de ("SET BOARD" from position)
 		{
 			sFen[0] = 0;
-			//strcat(sFen,"c:\\bscp\\");
 			scanf("%s", sText);
 			strcat(sFen,sText);
 			strcat(sFen,".fen");
-			LoadDiagram(sFen,1);
+			LoadDiagram(sFen,0); // 0 es el número "piso" a partir del cual empezar a contar: diagram #1, diagram #2,...
 			continue;
 		}
 		if (!strcmp(s, "sd")) // si es `sd` (de "SET DEPTH")
@@ -375,22 +374,31 @@ and WinBoard compatible.
 
 void xboard()
 {
-	int computer_side;
-	char line[256], command[256];
+	int computer_side; // computer_side = 0 si el motor es las blancas, computer_side = 1 si el motor es las negras, computer_side = 6 si no es blancas ni negras
+	char line[256], command[256]; // line es para leer una línea entera de la GUI, command es para parsear el comando
 	int m;
 	//int post = 0;
 	//int lookup;
 
-	signal(SIGINT, SIG_IGN);
-	printf("\n");
-	NewGame();
-	fixed_time = 0;
-	computer_side = EMPTY;
+	signal(SIGINT, SIG_IGN); // hace que se ignore ^C ("IGN" es por "ignore")
+	/* Extraído de http://www.open-aurec.com/wbforum/WinBoard/engine-intf.html:
+	   (...) it is recommended that you either ignore SIGINT by having your engine 
+	   call signal(SIGINT, SIG_IGN), or disable it with the "feature" command).
+	   */
+	printf("\n"); // despueś de recibir "xboard", el motor debe enviar un salto de línea
+	/* This command (`xboard`) will be sent once immediately after your engine process is 
+	   started. You can use it to put your engine into "xboard mode" if that is needed. 
+	   If your engine prints a prompt to ask for user input, you must turn off the prompt 
+	   and output a newline when the "xboard" command comes in.
+	*/
+	NewGame(); // prepara todo para un nuevo juego
+	fixed_time = 0; // pone en 0 la bandera de tiempo máximo personalizado
+	computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 
-	while(true) 
+	while(true) // entra en el bucle de interación con XBoard
 	{
 		fflush(stdout);
-		if (side == computer_side) 
+		if (side == computer_side) // si a quien le toca mover es a la computadora (debe enviar `move`)
 		{
 			think();
 			SetMaterial();
@@ -416,49 +424,63 @@ void xboard()
 
 			ply = 0;
 			Gen();
-			PrintResult();
-			continue;
+			PrintResult(); // despliega el resultado
+			continue; // continúa a la siguiente iteración
 		}
-		if (!fgets(line, 256, stdin))
-			return;
-		if (line[0] == '\n')
-			continue;
+		if (!fgets(line, 256, stdin)) // lee una línea desde la entrada estándar (hasta que 255 caracteres son leídos, se lee un `\n` o un caracter EOF ^D)
+			return; // si se recibió un null pointer, retorna de xboard()
+		if (line[0] == '\n') // si se recibió un salto de línea
+			continue; // continúa a la siguiente iteración
 		sscanf(line, "%s", command);
 		if (!strcmp(command, "xboard"))
 			continue;
 		if (!strcmp(command, "new")) 
+		/*	new:
+			   Reset the board to the standard chess starting position. 
+			   Set White on move. Leave force mode and set the engine to play Black. 
+			   Associate the engine's clock with Black and the opponent's clock with White. 
+			   Reset clocks and time controls to the start of a new game. Use wall clock for 
+			   time measurement. Stop clocks. Do not ponder on this move, even if pondering is on. 
+			   Remove any search depth limit previously set by the sd command. 
+		*/
 		{
-			NewGame();
-			computer_side = 1;
-			continue;
+			NewGame(); // prepara todo para un nuevo juego
+			computer_side = 1; // la computadora es negras
+			continue; // continúa a la siguiente iteración
 		}
 		if (!strcmp(command, "quit"))
-			return;
+			return; // retorna inmediatamente de xboard()
 		if (!strcmp(command, "force")) 
+		/*	force:
+			   Set the engine to play neither color ("force mode"). Stop clocks. 
+			   The engine should check that moves received in force mode are legal 
+			   and made in the proper turn, but should not think, ponder, or make 
+			   moves of its own.
+		*/
 		{
-			computer_side = EMPTY;
-			continue;
+			computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
+			continue; // continúa a la siguiente iteración
 		}
 		if (!strcmp(command, "white")) 
 		{
-			side = 0;
+			side = 0; // le toca mover a las blancas
 			xside = 1;
 			Gen();
-			computer_side = 1;
+			computer_side = 1; // computadora es negras
 			continue;
 		}
 		if (!strcmp(command, "black")) 
 		{
-			side = 1;
+			side = 1; // le toca mover a las negras
 			xside = 0;
 			Gen();
-			computer_side = 0;
+			computer_side = 0; // computadora es blancas
 			continue;
 		}
 		if (!strcmp(command, "st")) 
 		{
 			sscanf(line, "st %d", &max_time);
-			max_time *= 1000;
+			max_time *= 1000; // hay que multiplicar por 1000, ya que st está en segundos
 			max_depth = MAX_PLY;
 			fixed_time = 1;
 			continue;
@@ -466,17 +488,21 @@ void xboard()
 		if (!strcmp(command, "sd")) 
 		{
 			sscanf(line, "sd %d", &max_depth);
-			max_time = 1 << 25;
-			continue;
+			max_time = 1 << 25; // configura un tiempo máximo gigante (ya que el límite será la profundidad ingresada por el usuario)
+			fixed_depth = 1; // pone en 1 la bandera de profundidad personalizada
+			continue; // continúa a la siguiente iteración
 		}
-		if (!strcmp(command, "time")) 
+		if (!strcmp(command, "time")) // comando que da el tiempo que le queda al motor en centisegundos
 		{
 			sscanf(line, "time %d", &max_time);
-			if(max_time < 200)
-				max_depth = 1;
+			max_time = max_time*10; // se multiplica por 10 para convertir ese tiempo a milisegundos (en vez de centisegundos)
+			if(max_time < 200) // si es menor a 2 centésimas de segundo
+				max_depth = 1; // se fija la profundidad en 1 para que responda tan rápidamente como pueda
 			else
 			{
-				max_time /= 2;
+				max_time = (int) (0.025 * max_time); // 0.025 = 1/40 : 40 es el número medio de jugadas en una partida de ajedrez
+				//max_time -= 200; // se le restan 200 milisegundos (2 centésima de segundo) para que no pierda por tiempo
+				//max_time /= 2;
 				max_depth = MAX_PLY;
 			}
 			continue;
@@ -487,7 +513,7 @@ void xboard()
 		}
 		if (!strcmp(command, "go")) 
 		{
-			computer_side = side;
+			computer_side = side; // hace que la computadora sea a quien le toque mover
 			continue;
 		}
 		if (!strcmp(command, "random")) 
@@ -557,67 +583,66 @@ void xboard()
 
 void PrintResult()
 {
-	int i;
-	int flag=0;
+	int i; // iterador para recorrer move_list
+	int flag=0; // esta flag indicará si es que puede hacerse un movimiento legal
 
-	SetMaterial();
-	Gen();
-	for (i = 0; i < first_move[1]; ++i)
+	SetMaterial(); // actualiza el valor material de ambos bandos
+	Gen(); // genera todos los movimientos posibles
+	for (i = 0; i < first_move[1]; ++i) // recorre todos los movimientos
 		if (MakeMove(move_list[i].start,move_list[i].dest))
-		{
-			TakeBack();
-			flag=1;
+		{ // basta con que haya podido hacerse uno legal para que no sea ahogado
+			TakeBack(); // revierte ese movimiento
+			flag=1; // pone en 1 la bandera de que se puede mover
 			break;
 		}
 
-	if(pawn_mat[0]==0 && pawn_mat[1]==0 && piece_mat[0]<=300 && piece_mat[1]<=300)
+	if(pawn_mat[0]==0 && pawn_mat[1]==0 && piece_mat[0]<=300 && piece_mat[1]<=300) // si no hay peones y ninguno de los dos tiene más de una pieza menor
 	{
-		printf("1/2-1/2 {Stalemate}\n");
-
-		NewGame();
-		computer_side = EMPTY;
+		printf("1/2-1/2 {Stalemate}\n"); // en verdad es "Insufficient material"
+		NewGame(); // prepara todo para un nuevo juego
+		computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 		return;
 	}
-	if (i == first_move[1] && flag==0)
+	if (i == first_move[1] && flag==0) // no hay jugadas legales
 	{
-		Gen();
+		Gen(); // ¿esta llamada es necesaria?
 		printf(" end of game ");
 		
-		if (Attack(xside,kingloc[side]))
+		if (Attack(xside,kingloc[side])) // si el bando contrario al que le toca mover está dando jaque
 		{
-			if (side == 0)
+			if (side == 0) // si le toca mover a las blancas 
 			{
-				printf("0-1 {Black mates}\n");
+				printf("0-1 {Black mates}\n"); // es jaque mate de las negras
 			}
 			else
 			{
-				printf("1-0 {White mates}\n");
+				printf("1-0 {White mates}\n"); // si le toca mover a las negras, es jaque mate de las blancas
 			}
 		}
-		else
+		else // si no está dando jaque (y no hay movimientos legales)
 		{
-			printf("1/2-1/2 {Stalemate}\n");
+			printf("1/2-1/2 {Stalemate}\n"); // tablas por ahogado
 		}
-		NewGame();
-		computer_side = EMPTY;
+		NewGame(); // prepara todo para un nuevo juego
+		computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 	}
-	else if (reps() >= 3)
+	else if (reps() >= 3) // si la misma posición se repitió 3 veces
 	{
-		printf("1/2-1/2 {Draw by repetition}\n");
-		NewGame();
-		computer_side = EMPTY;
+		printf("1/2-1/2 {Draw by repetition}\n"); // tablas por repetición
+		NewGame(); // prepara todo para un nuevo juego
+		computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 	}
-	else if (fifty >= 100)
+	else if (fifty >= 100) // si el contador de jugadas desde la última captura o movimiento de peón excede 50
 	{
-		printf("1/2-1/2 {Draw by fifty move rule}\n");
-		NewGame();
-		computer_side = EMPTY;
+		printf("1/2-1/2 {Draw by fifty move rule}\n"); // tablas por la regla de las 50 jugadas
+		NewGame(); // prepara todo para un nuevo juego
+		computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 	}
 	if(turn>300)
 	{
 		printf("1/2-1/2 {>300 moves}\n");
-		NewGame();
-		computer_side = EMPTY;
+		NewGame(); // prepara todo para un nuevo juego
+		computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 		return;
 	}
 }
@@ -771,7 +796,7 @@ void SetUp()
 	SetMoves(); // llena las tablas necesarias para los movimientos de las piezas
 	InitBoard(); // inicializa el tablero y las variables globales para el comienzo del juego
 	Gen(); // deja en move_list todos los movimientos posibles a partir de la posición inicial
-	computer_side = EMPTY; // 
+	computer_side = EMPTY; // hace que la computadora no sea blancas ni negras
 	max_time = 1 << 25; // define el tiempo máximo como 2^25 segundos = 33554432 segundos (aprox. 388 días)
 	max_depth = 4; // define en 4 la profundidad máxima
 }
@@ -793,16 +818,16 @@ void SetMaterial()
 	pawn_mat[1]=0;
 	piece_mat[0]=0;
 	piece_mat[1]=0;
-	for(int x=0;x<64;x++)
+	for(int x=0;x<64;x++) // recorre una por una las casillas del tablero
 	{
-		if(board[x]<6)
+		if(board[x]<6) // si la casilla no está vacía
 		{
 			if(board[x]==5)
-				kingloc[color[x]] = x;
-			if(board[x]==0)
-				pawn_mat[color[x]] += 100;
+				kingloc[color[x]] = x; // define la posición del rey para blancas o negras (dependiendo de si es el rey blanco o el negro el que está en x)
+			if(board[x]==0) // si es un peón
+				pawn_mat[color[x]] += 100; // incrementa el valor material de peones de las blancas o negras (dependiendo de si es un peón blanco o negro)
 			else
-				piece_mat[color[x]] += piece_value[board[x]];
+				piece_mat[color[x]] += piece_value[board[x]]; // incrementa el valor material del resto de piezas para blancas o negras (dependiendo si es una pieza blanca o una pieza negra)
 		}
 	}
 }
@@ -810,7 +835,7 @@ void SetMaterial()
 int GetTime()
 {
 	struct timeb timebuffer;
-	ftime(&timebuffer);
+	ftime(&timebuffer); // struct con la cantidad de segundos y milisegundos desde 1970-01-01 00:00:00 +0000 (UTC)
 	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 
