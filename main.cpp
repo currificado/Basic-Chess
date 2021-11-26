@@ -37,7 +37,7 @@ char fen_name[256]; // variable para almacenar el nombre de un archivo FEN
 
 int flip = 0; // flip = 1 cuando haya que mostrar el tablero invertido, flip = 0 si debe mostrarse normal
 
-int computer_side; // computer_side = 0 si el motor es las blancas, computer_side = 1 si el motor es las negras, computer_side = 6 si no es blancas ni negras
+int computer_side; // computer_side = 0 si el motor es las blancas, computer_side = 1 si el motor es las negras, computer_side = 6 (EMPTY) si no es blancas ni negras
 
 int fixed_time; // "booleano" para cuando hay un tiempo máximo personalizado
 int fixed_depth; // "booleano" para cuando hay una profundidad máxima personalizada
@@ -501,9 +501,8 @@ void xboard()
 			else
 			{
 				max_time = (int) (0.025 * max_time); // 0.025 = 1/40 : 40 es el número medio de jugadas en una partida de ajedrez
-				//max_time -= 200; // se le restan 200 milisegundos (2 centésima de segundo) para que no pierda por tiempo
-				//max_time /= 2;
 				max_depth = MAX_PLY;
+				fixed_time = 1;
 			}
 			continue;
 		}
