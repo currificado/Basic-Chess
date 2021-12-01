@@ -147,7 +147,7 @@ int Search(int alpha, int beta, int depth)
 	if (ply > MAX_PLY-2) // si está por exceder el máximo de jugadas permitidas en una variante
 		return Eval(); // retorna la evaluación de la posición actual
 
-	move_ bestmove; // aquí va a guardarse la mejor jugada encontrada
+	move_data bestmove; // aquí va a guardarse la mejor jugada encontrada
 
 	int bestscore = -10001; // inicializa bestscore con el peor posible
 
@@ -444,7 +444,7 @@ It is moved to the top of the list so that it will be played next.
 void Sort(const int from)
 // from es el índice a partir del cual buscar en move_list
 {
-	move_ g;
+	move_data m;
 
 	int bs = move_list[from].score; // bs es abreviatura de "best score" (mejor puntaje encontrado hasta el momento)
 	int bi = from; // bi es abreviatura de "best index" (índice del movimiento de mejor puntaje)
@@ -455,9 +455,9 @@ void Sort(const int from)
 			bi = i; // actualiza el índice donde se encuentra el máximo
 		}
 	// swap entre move_list[from] y move_list[bi]
-	g = move_list[from];
+	m = move_list[from];
 	move_list[from] = move_list[bi];
-	move_list[bi] = g;
+	move_list[bi] = m;
 }
 /*
 

@@ -124,7 +124,7 @@ typedef struct {
 	int dest; // casilla destino
 	int promote; // pieza a la que se promocionó, si la jugada fuera una promoción (0 en caso contrario)
 	int score; // puntaje de la jugada
-} move_;
+} move_data;
 
 /* an element of the history stack, with the information
    necessary to take a move back. */
@@ -170,7 +170,7 @@ extern const int row[64];
 extern const int col[64];
 
 extern int first_move[MAX_PLY];
-extern move_ move_list[MOVE_STACK];
+extern move_data move_list[MOVE_STACK];
 extern game game_list[GAME_STACK];
 
 extern int hash_start,hash_dest;
@@ -266,7 +266,7 @@ U64 GetKey();
 U64 GetLock();
 void Free();
 void FreeAllHash();
-void AddHash(const int s, const move_ m);
+void AddHash(const int s, const move_data m);
 bool LookUp(const int s);
 int GetHashPercent();
 

@@ -103,7 +103,7 @@ Adds an entry into the HashTable.
 If that index is already being used, it simply overwrites it.
 
 */
-void AddHash(const int s, const move_ m)
+void AddHash(const int s, const move_data m)
 // s es el bando que mueve, m es la jugada
 {
 	hashp* ptr = &hashpos[s][currentkey]; // obtiene un puntero al nodo (de la tabla de hash de side) ubicado en el índice de la clave

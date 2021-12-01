@@ -25,7 +25,7 @@ con las casillas adyacentes alcanzables por la dama (-1 marca el fin de la lista
 int knight_moves[64][9]; // casillas alcanzables por el caballo (-1 marca el fin de la lista)
 int king_moves[64][9]; // casillas alcanzables por el rey (-1 marca el fin de la lista)
 
-move_ move_list[MOVE_STACK]; /* array con todas las moves de una variante */
+move_data move_list[MOVE_STACK]; /* array con todas las moves de una variante */
 int first_move[MAX_PLY]; /* first_move[j] da el índice de move_list donde arrancan las 
 jugadas de la ply n° j */
 
@@ -385,7 +385,7 @@ int GetBest(int ply);//
 
 void ShowAll(int ply)
 {
-	move_ *g;
+	move_data *m;
 	//DisplayBoard();
 	memset(done, 0, sizeof(done));
 
@@ -410,11 +410,11 @@ void ShowAll(int ply)
 		j = GetBest(ply);
 		{
 		//how dest display current line?
-		g = &move_list[j];
+		m = &move_list[j];
 		printf("%s",MoveString(move_list[j].start,move_list[j].dest,move_list[j].promote));
 		printf(" ");
 		printf(" score ");
-		printf("%d",g->score);
+		printf("%d",m->score);
 		printf("\n");
 		}
 	}
@@ -425,18 +425,18 @@ void ShowAll(int ply)
 
 int GetBest(int ply)
 {
-	move_ *g;
+	move_data *m;
 	int bestscore = -100000000;
 	int best = 0;
 	for(int i=0;i<first_move[ply+1]-first_move[ply];i++)
 	{
 		if(done[i] == 1) continue;
-		g = &move_list[first_move[ply] + i];
-		if(g->start == 0 && g->dest == 0)
+		m = &move_list[first_move[ply] + i];
+		if(m->start == 0 && m->dest == 0)
 		continue;//
-		if(g->score > bestscore)
+		if(m->score > bestscore)
 		{
-			bestscore= g->score;
+			bestscore= m->score;
 			best = i;
 		}
 	}
