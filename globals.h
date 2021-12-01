@@ -157,8 +157,8 @@ extern int nodes;
 
 extern int board[64];
 extern int color[64];
-extern int init_color_[64];
-extern int init_board[64];
+extern int startpos_color[64];
+extern int startpos_board[64];
 extern int kingloc[2];
 
 extern int history[64][64];

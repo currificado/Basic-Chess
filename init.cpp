@@ -42,7 +42,7 @@ int piece_value[6] =
 	100, 300, 300, 500, 900, 10000
 };
 
-int init_color_[64] = 
+int startpos_color[64] = 
 {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -54,7 +54,7 @@ int init_color_[64] =
 	1, 1, 1, 1, 1, 1, 1, 1
 };
 
-int init_board[64] = 
+int startpos_board[64] = 
 {
 	3, 1, 2, 4, 5, 2, 1, 3,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -242,8 +242,8 @@ void InitBoard() /* inicialización del tablero */
 {
 	for (int x = 0; x < 64; ++x) 
 	{
-		color[x] = init_color_[x];
-		board[x] = init_board[x];
+		color[x] = startpos_color[x];
+		board[x] = startpos_board[x];
 		rank[0][x] = row[x];
 		rank[1][x] = 7 - row[x];
 	}
