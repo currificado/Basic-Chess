@@ -36,7 +36,7 @@ A hash table entry includes a lock and start and dest squares.
 */
 struct hashp // entrada de la tabla de hash
 {
-	U64 hashlock; // cerrojo (la clave es el índice el nodo)
+	U64 hashlock; // cerrojo (la clave es el índice del nodo por eso no precisa guardarse)
 	int start; // casilla origen
 	int dest; // casilla destino
 	int num; // ¿este campo para qué es? no se usa nunca...
@@ -170,11 +170,15 @@ If so, it fetches the move stored there.
 
 */
 bool LookUp(const int s)
+/* LookUp() se fija en la tabla de hash de s si está la posición actual.
+   Si está, setea `hash_start` y `hash_dest` y devuelve true. En caso 
+   contrario, retorna false.
+*/
 {
 	if(hashpos[s][currentkey].hashlock != currentlock)
 	{
 		/* Esto puede ocurrir en dos situaciones:
-		1) La entrada currentkey de la tabla de hash de s nunca fue utilizada.
+		1) La entrada currentkey de la tabla de hash de s nunca fue utilizada (tiene "basura").
 		2) La entrada currentkey de la tabla de hash de s está ocupada, pero el cerrojo de dicha entrada no coincide con el cerrojo de la posición actual (hubo colisión).
 		*/
 		return false; // en cualquiera de los dos casos, se devuelve falso (no fue encontrada la posición actual en la tabla de hash)

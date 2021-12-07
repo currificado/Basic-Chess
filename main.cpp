@@ -51,11 +51,11 @@ void PrintResult(); // procedimiento que chequea si se llegó al final de la par
 void NewGame(); // inicialización de un nuevo juego
 void SetMaterial(); // carga el material para ambos bandos
 
-extern int move_start,move_dest;
+extern int move_start,move_dest; // están definidas en search.cpp
 
 int main()
 {
-	// despliega texto inicial con el nombre de la programa, versión, etc.
+	// despliega texto inicial con el nombre del programa, versión, etc.
 	printf("\n");
 	printf("Bills Basic Chess Engine\n");
 	printf("Version 1.01, 15/1/19\n");
@@ -84,10 +84,10 @@ int main()
 		{
 			think(); // búsqueda en profundidad
 
-			currentkey = GetKey(); // actualiza la clave de la posición actual
-			currentlock = GetLock(); // actualiza el cerrojo de la posición actual
+			currentkey = GetKey(); // obtiene la clave de la posición actual
+			currentlock = GetLock(); // obtiene el cerrojo de la posición actual
 			//lookup = LookUp(side);
-			LookUp(side);
+			LookUp(side); // se fija en la tabla de hash lo que `side` debe mover en la posición actual
 
 			if(move_start != 0 || move_dest != 0)
 			{
@@ -267,8 +267,8 @@ int main()
 	return 0;
 }
 
-int ParseMove(char *s)
-{
+int ParseMove(char *s) // s es el texto recogido de stdin que no coincide con ningún comando
+{// retorna el índice de la jugada en `move_list`
 	int start, dest, i;
 
 	if (s[0] < 'a' || s[0] > 'h' ||

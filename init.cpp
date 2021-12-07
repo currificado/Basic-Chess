@@ -12,25 +12,32 @@ int kingloc[2]; // kingloc[0] posición del rey blanco, kingloc[1] es posición 
 
 int history[64][64]; // historial de puntajes: history[x][y] es el puntaje del movimiento de x a y
 
-int table_score[2] ; //
-int square_score[2][6][64]; /* valor de las piezas (esto es el valor material + puntaje dependiendo de la posición): 
-el primer índice es Blancas/Negras, el segundo la pieza y el tercero el valor/puntaje */
+/* Valor de las piezas, i.e. 
+   Valor material + Puntaje dependiendo de la posición 
+   El primer índice es Blancas/Negras, 
+   el segundo la pieza y 
+   el tercero la casilla donde se encuentra 
+*/
+int square_score[2][6][64];
 int king_endgame[2][64]; // valor de la posición del rey (en finales)
 int pawn_mat[2]; // material de peones
 int piece_mat[2]; // material de piezas
 int passed[2][64]; // puntaje de los peones pasados
 
-int qrb_moves[64][9]; /* dada una casilla 0<=x<=63, qrb_moves[x] es un array de 9 elementos
-con las casillas adyacentes alcanzables por la dama (-1 marca el fin de la lista) */
+/* Dada una casilla 0<=x<=63, qrb_moves[x] es un array de 9 elementos
+   con las casillas adyacentes alcanzables por la dama (-1 marca el 
+   fin de la lista) 
+*/
+int qrb_moves[64][9];
 int knight_moves[64][9]; // casillas alcanzables por el caballo (-1 marca el fin de la lista)
 int king_moves[64][9]; // casillas alcanzables por el rey (-1 marca el fin de la lista)
 
-move_data move_list[MOVE_STACK]; /* array con todas las moves de una variante */
-int first_move[MAX_PLY]; /* first_move[j] da el índice de move_list donde arrancan las 
-jugadas de la ply n° j */
+move_data move_list[MOVE_STACK]; // array con todas las moves de una variante
+int first_move[MAX_PLY]; // first_move[i] da el índice de move_list donde arrancan las jugadas de la ply i
 
-game game_list[GAME_STACK];
+game game_list[GAME_STACK]; // lista de todas las jugadas que tuvieron lugar en la partida
 
+/* letra correspondiente a cada pieza */
 char piece_char[6] = 
 {
 	'P', 'N', 'B', 'R', 'Q', 'K'
@@ -42,6 +49,7 @@ int piece_value[6] =
 	100, 300, 300, 500, 900, 10000
 };
 
+// se usa para inicializar `color`
 int startpos_color[64] = 
 {
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -54,6 +62,7 @@ int startpos_color[64] =
 	1, 1, 1, 1, 1, 1, 1, 1
 };
 
+// se usa para inicializar `board`
 int startpos_board[64] = 
 {
 	3, 1, 2, 4, 5, 2, 1, 3,
@@ -92,6 +101,9 @@ const int row[64]=
 	7, 7, 7, 7, 7, 7, 7, 7
 };
 
+/* Da la casilla que es imagen especular respecto a la mitad del 
+   tablero (no como si el tablero se hubiera girado 180 grados)
+*/
 int Flip[64] = 
 {
 	 56,  57,  58,  59,  60,  61,  62,  63,
@@ -104,7 +116,7 @@ int Flip[64] =
 	  0,   1,   2,   3,   4,   5,   6,   7
 };
 
-int pawn_score[64] = 
+int pawn_score[64] = // valoración de la posición de un peón (desde la perspectiva de las blancas)
 {
 	  0,   0,   0,   0,   0,   0,   0,   0,
 	  0,   2,   4, -12, -12,   4,   2,   0,
@@ -116,7 +128,7 @@ int pawn_score[64] =
 	  0,   0,   0,   0,   0,   0,   0,   0
 };
 
-int knight_score[64] = 
+int knight_score[64] = // valoración de la posición de un caballo
 {
 	 -30, -20, -10, -8, -8, -10, -20,  -30,
 	 -16,  -6,  -2,  0,  0,  -2,  -6,  -16,
@@ -128,7 +140,7 @@ int knight_score[64] =
 	-150, -20, -10, -5, -5, -10, -20, -150
 };
 
-int bishop_score[64] = 
+int bishop_score[64] = // valoración de la posición de un alfil
 {
 	-10, -10, -12, -10, -10, -12, -10, -10,
 	  0,   4,   4,   4,   4,   4,   4,   0,
@@ -140,7 +152,7 @@ int bishop_score[64] =
 	-10, -10, -10, -10, -10, -10, -10, -10
 };
 
-int rook_score[64] = 
+int rook_score[64] = // valoración de la posición de una torre (desde la perspectiva de las blancas)
 {
 	 4,  4,  4,  6,  6,  4,  4,  4,
 	 0,  0,  0,  0,  0,  0,  0,  0,
@@ -152,7 +164,7 @@ int rook_score[64] =
 	10, 10, 10, 10, 10, 10, 10, 10
 };
 
-int queen_score[64] = 
+int queen_score[64] = // valoración de la posición de una dama
 {
 	-10, -10,  -6,  -4,  -4,  -6, -10, -10,
 	-10,   2,   2,   2,   2,   2,   2, -10,
@@ -164,7 +176,7 @@ int queen_score[64] =
 	-10, -10,   2,   2,   2,   2, -10, -10
 };
 
-int king_score[64] = /* puntajes para la posición del rey en apertura y medio juego */
+int king_score[64] = // puntajes para la posición del rey en apertura y medio juego (desde la perspectiva de las blancas)
 {
 	 20,  20,  20, -40,  10, -60,  20,  20,
 	 15,  20, -25, -30, -30, -45,  20,  15,
@@ -176,7 +188,7 @@ int king_score[64] = /* puntajes para la posición del rey en apertura y medio j
 	-48, -48, -48, -48, -48, -48, -48, -48
 };
 
-int king_endgame_score[64] = /* puntajes para la posición del rey en finales */
+int king_endgame_score[64] = // puntajes para la posición del rey en finales
 {
 	  0,   8,  16,  18,  18,  16,  8,  0,
 	  8,  16,  24,  32,  32,  24, 16,  8,
@@ -188,7 +200,7 @@ int king_endgame_score[64] = /* puntajes para la posición del rey en finales */
 	  0,   8,  16,  18,  18,  16,  8,  0
 };
 
-int passed_score[64] = 
+int passed_score[64] = // puntaje asociado a peones pasados (desde la perspectiva de las negras)
 {
 	 0,  0,  0,  0,  0,  0,  0,  0,
 	 0,  0,  0,  0,  0,  0,  0,  0,
@@ -200,8 +212,11 @@ int passed_score[64] =
 	 0,  0,  0,  0,  0,  0,  0,  0
 };
 
-int rank[2][64]; /* da el número de fila para cada casilla 
-(dependiendo si es desde la perspectiva de las blancas o de las negras, que es el primer índice) */
+/* `rank` da el número de fila para cada casilla 
+(dependiendo si es desde la perspectiva de las blancas 
+o de las negras, que es el primer índice) */
+int rank[2][64];
+
 /*
 
 SetTables fills the square_score tables, king_endgame tables and passed tables with the individual piece tables.
@@ -211,15 +226,16 @@ The board is flipped for the Black scores.
 */
 void SetTables() /* Carga las tablas con los puntajes de las piezas */
 {
-	for(int x=0;x<64;x++)
+	for(int x=0;x<64;x++) // recorre una por una las casillas del tablero
 	{
+		// se asigna el puntaje debido a la posición + valor material
 		square_score[0][0][x] = pawn_score[x] + 100;
 		square_score[0][1][x] = knight_score[x] + 300;
 		square_score[0][2][x] = bishop_score[x] + 300;
 		square_score[0][3][x] = rook_score[x] + 500;
 		square_score[0][4][x] = queen_score[x] + 900;
 		square_score[0][5][x] = king_score[x];
-
+		//para las negras es idéntico, sólo que se usa Flip[x] en lugar de x
 		square_score[1][0][x] = pawn_score[Flip[x]] + 100;
 		square_score[1][1][x] = knight_score[Flip[x]] + 300;
 		square_score[1][2][x] = bishop_score[Flip[x]] + 300;
@@ -242,10 +258,10 @@ void InitBoard() /* inicialización del tablero */
 {
 	for (int x = 0; x < 64; ++x) 
 	{
-		color[x] = startpos_color[x];
-		board[x] = startpos_board[x];
-		rank[0][x] = row[x];
-		rank[1][x] = 7 - row[x];
+		color[x] = startpos_color[x]; // inicializa `color` con `startpos_color`
+		board[x] = startpos_board[x]; // inicializa `board` con `startpos_board`
+		rank[0][x] = row[x]; // fila desde la perspectiva de las blancas
+		rank[1][x] = 7 - row[x]; // fila desde la perspectiva de las negras
 	}
 
 	side = 0; // inician las Blancas
@@ -257,10 +273,10 @@ void InitBoard() /* inicialización del tablero */
 	kingloc[0] = E1; /* posición del rey de las blancas en e1 */
 	kingloc[1] = E8; /* posición del rey de las negras en e8 */
 
-	game_list[hply].castle_q[0] = 1;
-	game_list[hply].castle_q[1] = 1;
-	game_list[hply].castle_k[0] = 1;
-	game_list[hply].castle_k[1] = 1;
+	game_list[hply].castle_q[0] = 1; // las blancas pueden enrocar queenside
+	game_list[hply].castle_q[1] = 1; // las negras pueden enrocar queenside
+	game_list[hply].castle_k[0] = 1; // las blancas pueden enrocar kingside
+	game_list[hply].castle_k[1] = 1; // las negras pueden enrocar kingside
 }
 /*
 
@@ -269,18 +285,18 @@ NewPosition gets the board ready before the computer starts to think.
 */
 void NewPosition()
 {
-	piece_mat[0] = pawn_mat[0] = table_score[0] = 0;
-	piece_mat[1] = pawn_mat[1] = table_score[1] = 0;
+	piece_mat[0] = pawn_mat[0] = 0;
+	piece_mat[1] = pawn_mat[1] = 0;
 
 	for(int i=0;i<64;i++)
 	{
-		if(board[i] < 6)
+		if(board[i] < 6) // ¿es esto necesario? porque cuando se llama a NewPosition() `board` y `color` ya están seteados
 		{
 			AddPiece(color[i],board[i],i);
 		}
 	}
-	currentkey = GetKey();
-	currentlock = GetLock();
+	currentkey = GetKey(); // actualiza la clave actual
+	currentlock = GetLock(); // actualiza el cerrojo actual
 }
 /*
 
@@ -312,13 +328,13 @@ SetMoves creates the lookup tables for Knights, line-pieces and Kings.
 These will later be used to generate moves, captures and attacks.
 
 */
-void SetMoves()
+void SetMoves() // carga `knight_moves`, `qrb_moves`, `king_moves`
 {
 	int k=0;
 	int y;
 	nodes = 1;
 
-	for(int x=0;x<64;x++)
+	for(int x=0;x<64;x++) // carga los movimientos de caballo
 	{
 		k = 0;
 		if(row[x]<6 && col[x]<7) 
@@ -340,7 +356,7 @@ void SetMoves()
 		knight_moves[x][k] = -1;
 	}
 
-	for(int x=0;x<64;x++)
+	for(int x=0;x<64;x++) // carga los movimientos de dama
 	{
 		k = 0;
 		
@@ -358,6 +374,7 @@ void SetMoves()
 		if(col[x]>0 && row[x]>0) qrb_moves[x][SW]=x-9;
 		if(col[x]<7 && row[x]>0) qrb_moves[x][SE]=x-7;
 		
+		// carga los movimientos de rey
 		y=0;
 		if(col[x]>0) 
 			king_moves[x][y++]=x-1;

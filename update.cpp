@@ -117,9 +117,11 @@ int MakeMove(const int start, const int dest)
 	if (board[start] == P) // si fue movimiento de peón
 	{
 		fifty = 0; // reinicializa el contador de las 50 jugadas en 0
-		if (board[dest] == EMPTY && col[start] != col[dest])
+		if (board[dest] == EMPTY && col[start] != col[dest]) // si el peón cambió de columna y la casilla destino estaba vacía (fue captura al paso)
 		{
-			RemovePiece(xside,P,dest + ReverseSquare[side]);
+			RemovePiece(xside,P,dest + ReverseSquare[side]); // borra el peón (que fue capturado al paso) del bando contrario xside
+			//éste se encontrará en dest+8 si side=1 (captura al paso de negras) [el peón negro que capturó queda debajo del blanco capturado]
+			//éste se encontrará en dest-8 si side=0 (captura al paso de blancas) [el peón blanco que capturó queda encima del peón negro capturado]
 		}
 	}
 
@@ -161,8 +163,8 @@ int MakeMove(const int start, const int dest)
 		g->castle_k[1] = 0; // ni tampoco corto
 	}
 
-	side ^= 1; // side   =  side xor 1 : si side=1 pasa a valer 0, si side=0 pasa a valer 1
-	xside ^= 1;// xxside = xside xor 1 : si xside=1 pasa a valer 0, si xside=0 pasa a valer 1
+	side ^= 1; // side  =  side xor 1 : si side=1 pasa a valer 0, si side=0 pasa a valer 1
+	xside ^= 1;// xside = xside xor 1 : si xside=1 pasa a valer 0, si xside=0 pasa a valer 1
 	if (Attack(side,kingloc[xside])) // SI EL REY DEL BANDO QUE ACABA DE REALIZAR LA JUGADA QUEDA EN JAQUE
 	{
 		TakeBack(); // revierte todos los cambios anteriores

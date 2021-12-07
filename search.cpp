@@ -8,7 +8,7 @@ void DisplayPV(int i);
 jmp_buf env; // env es por "environment", es donde se guarda el contexto de la llamada para luego ser usado con longjmp
 bool stop_search; // bandera para determinar cuándo parar la búsqueda
 
-int currentmax;
+int currentmax; // variable para almacenar la profundidad en cada iteración de la deepening iteration
 
 int move_start,move_dest;
 
@@ -33,7 +33,7 @@ void think()
 		return;
 	}
 	if(fixed_time==0) // si no hay definido un tiempo fijo para cada jugada
-	{
+	{// si lo hay, debe respetarse por tanto no se puede cambiar `max_time`
 		if(game_list[hply-1].capture < 6 && game_list[hply-1].capture == board[game_list[hply-1].dest])
 		// si la ply anterior fue peón x peón, caballo x caballo, alfil x alfil, torre x torre o dama x dama probablemente sea recaptura
 		{
@@ -44,31 +44,33 @@ void think()
 			max_time = max_time/2; // entonces fija el tiempo máximo en la mitad
 		}
 	}
-	start_time = GetTime(); // tiempo inicial es el instante actual
-	stop_time = start_time + max_time; // tiempo de parada es el tiempo inicial + un tiempo máximo max_time
+	start_time = GetTime(); // marca de tiempo inicial (instante actual)
+	stop_time = start_time + max_time; // marca de tiempo de parada (tiempo inicial + tiempo máximo `max_time`)
 
 	ply = 0; // inicializa el contador de ply en 0
 	nodes = 0; // inicializa cantidad de nodos en 0
 	
 	NewPosition(); // prepara el tablero para think()
 	memset(history, 0, sizeof(history)); // limpia con todo ceros la matriz 64x64 history
+	/* esta matriz se limpia antes de iniciar la deepening iteration para que queden guardados las 
+	   jugadas que ocasionaron poda */
 	printf("ply      nodes  score  pv\n");
 
 	for (int i = 1; i <= max_depth; ++i) // deepening iteration: hace la búsqueda con profundidad 1, profundidad 2, etc.
 	{
 		currentmax = i;
 		//if(fixed_depth==0 && max_depth>1)
-		if(fixed_time==1)
+		if(fixed_time==1) // si la bandera de tiempo fijo está levantada
 		{
 			if(GetTime() >= start_time + max_time)
 			{
-				stop_search = true;
+				stop_search = true; //pone `stop_search` en true si el tiempo actual excede `stop_time`
 				return;
 			}
 		}
-		else if(GetTime() >= start_time + max_time/4)
+		else if(GetTime() >= start_time + max_time/4) // si la bandera de tiempo fijo no está levantada y además el tiempo actual supera el tiempo inicial + la cuarta parte del tiempo máximo
 		{
-			stop_search = true;
+			stop_search = true; //pone `stop_search` en true
 			return;
 		}
 
@@ -82,7 +84,7 @@ void think()
 		*/
 		printf("%d %d %d %d ", i, x, (GetTime() - start_time) / 10, nodes);
 
-		if(LookUp(side))
+		if(LookUp(side)) // si la posición actual está en la tabla de hash
 		{
 			DisplayPV(i); // muestra la variación principal
 		}
@@ -467,10 +469,15 @@ If so, the search ends.
 */
 void CheckUp()
 {
-	if( (GetTime() >= stop_time || (max_time<50 && ply>1)) && fixed_depth==0 && ply>1)
+	if( (GetTime() >= stop_time || max_time<50) && fixed_depth==0 && ply>1)
+	/* Para que se ponga `stop_search` en true, tienen que ocurrir simultáneamente tres condiciones:
+	   1) Que se haya igualado o superado el tiempo de parada o bien que el tiempo máximo sea menor a 50 ms
+	   2) Que no se haya configurado una profundidad fija
+	   3) Que la ply sea al menos de 2 (o sea, que haya avanzado al menos una jugada)
+	*/
 	{
 		stop_search = true; // setea la bandera de detener búsqueda en verdadero
-		longjmp(env, 0); // salta a set
+		longjmp(env, 0); // salta a setjmp
 	}
 }
 /*
@@ -501,18 +508,21 @@ Lastly, it takes back the moves, returning to the original position.
 
 */
 void DisplayPV(int i)
-{
+{// en i está la profundidad hasta dónde ir
 	move_start = hash_start;
 	move_dest = hash_dest;
-
+	/*
+	`hash_start` y `hash_dest` están cargados porque se hizo un LookUp() antes de llamar a DisplayPV()
+	se setean `move_start` y `move_dest` como los encontrados en la tabla de hash
+	*/
 	for(int x=0;x < i;x++)
 	{
-		if(LookUp(side)==false)
-			break;
+		if(LookUp(side)==false) // busca la posición actual en la tabla de hash y carga en hash_start y hash_dest la jugada que debe moverse en dicha posición
+			break;// si no la econtró, sale del for
 		printf(" ");
-		Alg(hash_start,hash_dest);
-		MakeMove(hash_start,hash_dest);
+		Alg(hash_start,hash_dest); // imprime la jugada en stdout
+		MakeMove(hash_start,hash_dest); // hace dicha jugada para avanzar a la siguiente iteración del for
 	}
 	while (ply)
-		TakeBack();
+		TakeBack(); // finalmente deshace todas las jugadas
 }
