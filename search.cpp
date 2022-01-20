@@ -518,7 +518,7 @@ void DisplayPV(int i)
 	for(int x=0;x < i;x++)
 	{
 		if(LookUp(side)==false) // busca la posición actual en la tabla de hash y carga en hash_start y hash_dest la jugada que debe moverse en dicha posición
-			break;// si no la econtró, sale del for
+			break;// si no la encontró, sale del for
 		printf(" ");
 		Alg(hash_start,hash_dest); // imprime la jugada en stdout
 		MakeMove(hash_start,hash_dest); // hace dicha jugada para avanzar a la siguiente iteración del for
