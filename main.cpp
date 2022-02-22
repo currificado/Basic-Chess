@@ -660,7 +660,7 @@ int LoadDiagram(char* file,int num)
 {
 	int x;
 	static int count=1;
-	char ts[200];
+	char ts[256];
 
 	diagram_file = fopen(file, "r");
 	if (!diagram_file)
@@ -671,11 +671,9 @@ int LoadDiagram(char* file,int num)
 
 	strcpy(fen_name,file);
 
-	for(x=0;x<num;x++)
-	{
-		fgets(ts, 256, diagram_file);
-		if(!ts) break;
-	}
+
+	fgets(ts, 256, diagram_file);
+
 
 	for(x=0;x<64;x++)
 	{
